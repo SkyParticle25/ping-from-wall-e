@@ -9,35 +9,26 @@ using UnityEngine;
 public enum Side { Left, Right } 
 
 
-public class World : MonoBehaviour
+public class World : Singleton<World> 
 {
-    // singleton 
-    public static World instance; 
     // parameters 
     [SerializeField] Vector2 size = new Vector2(50, 25); 
     // geometry 
     Rect rect; 
     
+    
 
     void Awake () 
     {
-        instance = this; 
-
-        ScreenTracker.instance.onScreenResized += OnScreenResized; 
-
+        InitSingleton(this); 
+        InitEvents(); 
         InitRect(); 
-    }
+    }    
 
-    // Start is called before the first frame update
-    void Start()
+    void OnDestroy () 
     {
-
-    }
-
-    // Update is called once per frame
-    void Update()
-    {
-
+        ClearSingleton(); 
+        ClearEvents(); 
     }
 
 
@@ -46,7 +37,17 @@ public class World : MonoBehaviour
 
     //  Events  ----------------------------------------------------- 
     public delegate void WorldResizedHandler (float widthChange); 
-    public event WorldResizedHandler onWorldResized; 
+    public static event WorldResizedHandler onWorldResized = delegate {}; 
+
+    void InitEvents () 
+    {
+        ScreenTracker.onScreenResized += OnScreenResized; 
+    }
+
+    void ClearEvents () 
+    {
+        ScreenTracker.onScreenResized -= OnScreenResized; 
+    }
 
     public void OnScreenResized () 
     {
@@ -63,7 +64,7 @@ public class World : MonoBehaviour
 
 
     //  Rect  ------------------------------------------------------- 
-    public Rect Rect => rect; 
+    public static Rect Rect => instance.rect; 
 
     void InitRect () 
     {

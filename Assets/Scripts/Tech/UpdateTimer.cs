@@ -35,6 +35,11 @@ public class UpdateTimer
         float updateInterval, 
         float updateVariance 
     ) {
+        bool changed = 
+            this.updateInterval != updateInterval || 
+            this.updateVariance != updateVariance; 
+        if (!changed) return; 
+
         this.updateInterval = updateInterval; 
         this.updateVariance = updateVariance; 
 
@@ -80,7 +85,6 @@ public class UpdateTimer
         {
             function(); 
             OnUpdated(time); 
-
             return true; 
         }
 

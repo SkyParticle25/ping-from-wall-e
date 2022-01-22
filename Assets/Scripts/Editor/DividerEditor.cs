@@ -35,7 +35,7 @@ public class DividerEditor : Editor
     {
         Divider divider = (Divider) target; 
 
-        float squareSize = divider.square.transform.localScale.y; 
+        float squareSize = divider.squarePrefab.transform.localScale.y; 
         float dividerLength = squareSize * (divider.squareCount * 2 + 1); 
 
         Vector2 center = divider.transform.position; 
@@ -53,7 +53,7 @@ public class DividerEditor : Editor
     void CreateSquare (Divider divider, Vector2 position) 
     {
         Instantiate(
-            divider.square, 
+            divider.squarePrefab, 
             position, 
             Quaternion.identity, 
             divider.transform 

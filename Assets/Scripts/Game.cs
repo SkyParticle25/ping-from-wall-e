@@ -9,23 +9,18 @@ using UnityEngine.InputSystem;
 public enum PlayerType {Player, NPC} 
 
 
-public class Game : MonoBehaviour
+public class Game : Singleton<Game> 
 {
     // start parameters 
-    static PlayerType leftPlayer = PlayerType.Player; 
-    static PlayerType rightPlayer = PlayerType.NPC; 
+    public static PlayerType leftPlayerType = PlayerType.Player; 
+    public static PlayerType rightPlayerType = PlayerType.NPC; 
 
-    // singleton 
-    public static Game instance { get; private set; } 
     // parameters 
     [SerializeField] GameObject playerPrefab; 
     [SerializeField] GameObject npcPrefab; 
     [Space]
     [SerializeField] Square square; 
-    [SerializeField] Transform platformsParent; 
-    [Space]
-    [SerializeField] ScoreCounter scoreLeft; 
-    [SerializeField] ScoreCounter scoreRight; 
+    [SerializeField] Transform platformsContainer; 
     [Space]
     [SerializeField] float startWaitTime = 1; 
     // data 
@@ -36,8 +31,8 @@ public class Game : MonoBehaviour
 
     void Awake () 
     {
-        instance = this; 
-
+        InitSingleton(this); 
+        InitEvents(); 
         InitGame(); 
         InitLaunchSide(); 
     }
@@ -45,18 +40,12 @@ public class Game : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        square.onGoal += OnGoal; 
-        StartRound(); 
+        StartGame(); 
     }
 
     // Update is called once per frame
     void Update()
     {
-        if (Keyboard.current.pKey.wasPressedThisFrame) 
-        {
-            IsPaused = !IsPaused; 
-        }
-
         if (Keyboard.current.spaceKey.wasPressedThisFrame) 
         {
             RestartRound(); 
@@ -65,7 +54,9 @@ public class Game : MonoBehaviour
 
     void OnDestroy () 
     {
-        Time.timeScale = 1; 
+        ClearSingleton(); 
+        ClearEvents(); 
+        ClearTime(); 
     }
 
 
@@ -74,37 +65,40 @@ public class Game : MonoBehaviour
 
     //  Events  ----------------------------------------------------- 
     public delegate void EventHandler (); 
-    public event EventHandler onReset; 
+    public delegate void GoalEventHandler (Side squareLeftTo); 
+    public static event GoalEventHandler onGoal = delegate {}; 
+    public static event EventHandler onPause = delegate {}; 
+    public static event EventHandler onContinue = delegate {}; 
+    public static event EventHandler onRoundReset = delegate {}; 
+    public static event EventHandler onGameReset = delegate {}; 
 
-    public void OnGoal (Side squareLeftTo) 
+    void InitEvents () 
     {
-        if (squareLeftTo == Side.Left) 
-        {
-            scoreRight.Increment(); 
-        }
-        else 
-        {
-            scoreLeft.Increment(); 
-        }
+        square.onGoal += OnGoal; 
+    }
 
-        RestartRound(); 
+    void ClearEvents () 
+    {
+        square.onGoal -= OnGoal; 
+    }
+
+    public static void OnGoal (Side squareLeftTo) 
+    {
+        onGoal(squareLeftTo); 
+        instance.RestartRound(); 
     }
 
 
 
 
 
-    //  Init game  -------------------------------------------------- 
-    public static void SetStartParameters (PlayerType leftPlayer, PlayerType rightPlayer) 
-    {
-        Game.leftPlayer = leftPlayer; 
-        Game.rightPlayer = rightPlayer; 
-    }
-
+    //  Game  ------------------------------------------------------- 
     void InitGame () 
     {
-        CreatePlatform(leftPlayer, Side.Left); 
-        CreatePlatform(rightPlayer, Side.Right); 
+        GameSettings.Load(); 
+
+        CreatePlatform(leftPlayerType, Side.Left); 
+        CreatePlatform(rightPlayerType, Side.Right); 
     }
 
     void CreatePlatform (PlayerType playerType, Side side) 
@@ -112,16 +106,19 @@ public class Game : MonoBehaviour
         // create platform 
         GameObject prefab = 
             playerType == PlayerType.Player ? 
-            playerPrefab : npcPrefab; 
+            playerPrefab : 
+            npcPrefab; 
         GameObject platform = Instantiate(
             prefab, 
             Vector2.zero, 
             Quaternion.identity, 
-            platformsParent 
+            platformsContainer 
         ); 
 
         // init platform 
         platform.GetComponent<Platform>().Init(side); 
+
+        // init player / NPC 
         switch (playerType) 
         {
             case PlayerType.Player: 
@@ -146,25 +143,37 @@ public class Game : MonoBehaviour
         }
     }
 
-
-
-
-
-
-
-    //  Game  ------------------------------------------------------- 
-    public bool IsPaused 
+    void StartGame () 
     {
-        get { return isPaused; } 
-        set {
-            isPaused = value; 
-            Time.timeScale = value ? 0 : 1; 
-        }
+        StartRound(); 
     }
 
+    void ResetGame () 
+    {
+        ResetRound(); 
+        onGameReset(); 
+    }
+
+    public static void RestartGame () 
+    {        
+        instance.ResetGame(); 
+        instance.StartGame(); 
+    }
+
+
+
+
+
+    //  Rounds  ----------------------------------------------------- 
     void StartRound () 
     {
         square.LaunchAfter(startWaitTime); 
+    }
+
+    void ResetRound () 
+    {
+        UpdateNextLaunchSide(); 
+        onRoundReset(); 
     }
 
     void RestartRound () 
@@ -173,10 +182,32 @@ public class Game : MonoBehaviour
         StartRound(); 
     }
 
-    void ResetRound () 
+
+
+
+
+    //  Pause  ------------------------------------------------------ 
+    public static bool IsPaused => instance.isPaused; 
+
+    public static void Pause () 
     {
-        UpdateNextLaunchSide(); 
-        onReset(); 
+        instance.isPaused = true; 
+        Time.timeScale = 0; 
+
+        onPause(); 
+    }
+
+    public static void Continue () 
+    {
+        instance.isPaused = false; 
+        Time.timeScale = 1; 
+
+        onContinue(); 
+    }
+
+    void ClearTime () 
+    {
+        Time.timeScale = 1; 
     }
 
 
@@ -184,7 +215,7 @@ public class Game : MonoBehaviour
 
 
     //  Launch side  ------------------------------------------------ 
-    public Side NextLaunchSide => nextLaunchSide; 
+    public static Side NextLaunchSide => instance.nextLaunchSide; 
 
     void InitLaunchSide () 
     {

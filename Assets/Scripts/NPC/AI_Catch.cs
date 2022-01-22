@@ -6,53 +6,22 @@ using UnityEngine;
 
 
 
-[System.Serializable] 
-public struct AI_Catching_Params 
-{
-    public float startDelay; 
-    public float startVariance; 
-    public float moveInterval; 
-    public float moveVariance; 
-    public float maxMoveError; 
-}
-
-
-
-
-
 public class AI_Catch : AI_Activity 
 {
-    // parameters 
-    float maxMoveError; 
     // data 
     float catchPosition; 
 
 
     public AI_Catch (
         AI ai, 
-        AI_Catching_Params parameters 
+        Parameters parameters 
     ) 
     : base (
         ai, 
-        parameters.startDelay, 
-        parameters.startVariance, 
-        parameters.moveInterval, 
-        parameters.moveVariance 
+        parameters 
     ) {
-        maxMoveError = parameters.maxMoveError; 
-    }
-
-    public void UpdateParameters (AI_Catching_Params parameters) 
-    {
-        base.UpdateParameters(
-            parameters.startDelay, 
-            parameters.startVariance, 
-            parameters.moveInterval, 
-            parameters.moveVariance 
-        ); 
-
-        maxMoveError = parameters.maxMoveError; 
-    }
+        
+    } 
 
 
 
@@ -76,7 +45,7 @@ public class AI_Catch : AI_Activity
     //  Info  ------------------------------------------------------- 
     float FindCatchPosition () 
     {
-        SquarePathExplorer pathExplorer = new SquarePathExplorer(Square, World); 
+        SquarePathExplorer pathExplorer = new SquarePathExplorer(Square); 
 
         if (!pathExplorer.IsLookingAtLineInX(Platform.Position.x)) 
         {

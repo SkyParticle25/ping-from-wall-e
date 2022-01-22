@@ -6,10 +6,12 @@ using UnityEngine;
 
 
 
-public class ScreenTracker : MonoBehaviour
+/// <summary> 
+/// <para> Tracks screen size and sends screen resized events. </para>
+/// <para> Must update before everything else. </para>
+/// </summary>
+public class ScreenTracker : Singleton<ScreenTracker> 
 {
-    // singleton 
-    public static ScreenTracker instance { get; private set; } 
     // data 
     Vector2 screenSize; 
 
@@ -17,25 +19,22 @@ public class ScreenTracker : MonoBehaviour
 
     void Awake () 
     {
-        ScreenTracker.instance = this; 
-
+        InitSingleton(this); 
         RememberScreenSize(); 
     }
 
-    // Start is called before the first frame update
-    void Start()
-    {
-        
-    }
-
-    // Update is called once per frame
     void Update()
     {
         if (DidScreenSizeChange()) 
         {
             RememberScreenSize(); 
-            if (onScreenResized != null) onScreenResized(); 
+            onScreenResized(); 
         }
+    }
+
+    void OnDestroy () 
+    {
+        ClearSingleton(); 
     }
 
 
@@ -44,7 +43,7 @@ public class ScreenTracker : MonoBehaviour
 
     //  Events  ----------------------------------------------------- 
     public delegate void EventHandler (); 
-    public event EventHandler onScreenResized; 
+    public static event EventHandler onScreenResized = delegate {}; 
 
 
 

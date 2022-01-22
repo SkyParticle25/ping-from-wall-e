@@ -12,46 +12,43 @@ public class NPC : MonoBehaviour
     [SerializeField] Square square; 
     [SerializeField] float speed = 10; 
     [Header("AI")]
-    [SerializeField] AI_Idle_Params idle; 
-    [SerializeField] AI_Catching_Params catching; 
+    [SerializeField] AI_Activity.Parameters idle; 
+    [SerializeField] AI_Activity.Parameters catching; 
     // connections 
     Platform platform; 
-    World world; 
-    // AI 
+    // data 
     AI ai; 
-    // motion 
     float destination = 0; 
 
 
+
+    void Awake () 
+    {
+        platform = GetComponent<Platform>(); 
+        InitEvents(); 
+    }
 
     public void Init (Square square) 
     {
         this.square = square; 
     }
 
-    // Start is called before the first frame update
     void Start()
     {
-        platform = GetComponent<Platform>(); 
-        world = World.instance; 
-
-        Game.instance.onReset += Reset; 
-
+        InitMotion(); 
         ai = new AI(this, idle, catching); 
     }
 
-    // Update is called once per frame
     void Update()
     {
-        UpdateParameters(); 
-
         ai.Update(); 
         MoveTowards(destination); 
     }
 
-    void UpdateParameters () 
+    void OnDestroy () 
     {
-        ai.UpdateParameters(idle, catching); 
+        ai.OnDestroy(); 
+        CLearEvents(); 
     }
 
 
@@ -61,16 +58,32 @@ public class NPC : MonoBehaviour
     //  Info  ------------------------------------------------------- 
     public Platform Platform => platform; 
     public Square Square => square; 
-    public World World => world; 
 
 
 
 
 
-    //  State  ------------------------------------------------------ 
+    //  Events  ----------------------------------------------------- 
+    void InitEvents () 
+    {
+        Game.onRoundReset += Reset; 
+        GameSettings.onChanged += OnSettingsChanged; 
+    }
+
+    void CLearEvents () 
+    {
+        Game.onRoundReset -= Reset; 
+        GameSettings.onChanged -= OnSettingsChanged; 
+    }
+
+    public void OnSettingsChanged () 
+    {
+        speed = GameSettings.platformSpeed; 
+    }
+
     public void Reset () 
     {
-        destination = 0; 
+        ResetMotion(); 
         ai.Reset(); 
     }
 
@@ -81,6 +94,11 @@ public class NPC : MonoBehaviour
     //  Motion  ----------------------------------------------------- 
     public float Destination => destination; 
 
+    void InitMotion () 
+    {
+        speed = GameSettings.platformSpeed; 
+    }
+
     public void SetDestination (float y, float maxError = 0) 
     {
         if (maxError == 0) 
@@ -89,8 +107,8 @@ public class NPC : MonoBehaviour
         }
         else 
         {
-            float offsetScale = Random.Range(- maxError, maxError); 
-            float offset = offsetScale * platform.Rect.height / 2; 
+            float offsetAmount = Random.Range(- maxError, maxError); 
+            float offset = offsetAmount * platform.Rect.height / 2; 
             destination = y + offset; 
         }
     }
@@ -103,6 +121,11 @@ public class NPC : MonoBehaviour
         motion = Mathf.Clamp(motion, - maxDistance, maxDistance); 
 
         platform.Move(motion); 
+    }
+
+    void ResetMotion () 
+    {
+        destination = 0; 
     }
 
 }

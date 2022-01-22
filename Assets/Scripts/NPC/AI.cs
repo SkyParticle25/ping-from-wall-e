@@ -18,8 +18,8 @@ public class AI
 
     public AI (
         NPC npc, 
-        AI_Idle_Params idleParams, 
-        AI_Catching_Params catchingParams 
+        AI_Activity.Parameters idleParams, 
+        AI_Activity.Parameters catchingParams 
     ) {
         this.npc = npc; 
 
@@ -34,17 +34,15 @@ public class AI
         activity.Update(); 
     }
 
-    public void UpdateParameters (
-        AI_Idle_Params idleParams, 
-        AI_Catching_Params catchingParams 
-    ) {
-        idle.UpdateParameters(idleParams); 
-        catching.UpdateParameters(catchingParams); 
-    }
-
     public void Reset () 
     {
         SetActivity(idle); 
+    }
+
+    public void OnDestroy () 
+    {
+        idle.OnDestroy(); 
+        catching.OnDestroy(); 
     }
     
 
@@ -55,7 +53,6 @@ public class AI
     public Platform Platform => npc.Platform; 
     public NPC NPC => npc; 
     public Square Square => npc.Square; 
-    public World World => npc.World; 
     public float Time => npc.Square.Distance; 
 
 
@@ -77,13 +74,13 @@ public class AI
 
     bool IsSquareGoingToMe () 
     {
-        SquarePathExplorer pathExplorer = new SquarePathExplorer(Square, World); 
+        SquarePathExplorer pathExplorer = new SquarePathExplorer(Square); 
         return pathExplorer.IsGoingToSide(Platform.Side); 
     }
 
     bool CanCatchNow () 
     {
-        SquarePathExplorer pathExplorer = new SquarePathExplorer(Square, World); 
+        SquarePathExplorer pathExplorer = new SquarePathExplorer(Square); 
         
         if (pathExplorer.IsLookingAtLineInX(Platform.Position.x)) 
         {

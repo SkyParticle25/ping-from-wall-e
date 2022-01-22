@@ -8,10 +8,6 @@ using UnityEngine;
 
 public class Geometry 
 {
-    
-
-
-
 
     //  Intersections  ---------------------------------------------- 
     public static bool Ray_LineH (Ray2D ray, float y, out Vector2 point) 
@@ -239,7 +235,6 @@ public class Geometry
             new Vector2(ray.direction.x, - ray.direction.y) 
         ); 
     }
-
 
 }
 

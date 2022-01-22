@@ -8,32 +8,7 @@ using UnityEngine;
 
 public class Testing : MonoBehaviour
 {
-    // data 
-    public static new Camera camera; 
-
-
-
-    void Awake () 
-    {
-        camera = Camera.main; 
-    }
-
-    // Start is called before the first frame update
-    void Start()
-    {
-        
-    }   
-
-    // Update is called once per frame
-    void Update()
-    {
-
-    }
-
-
-
-
-
+    
     //  Drawing  ---------------------------------------------------- 
     public static void DrawPoint (Vector3 point, Color color, float duration = 0) 
     {
@@ -66,31 +41,6 @@ public class Testing : MonoBehaviour
         Debug.DrawLine(B, C, color, duration); 
         Debug.DrawLine(C, D, color, duration); 
         Debug.DrawLine(D, A, color, duration); 
-    }
-
-
-
-
-
-    //  Drawing stuff  ---------------------------------------------- 
-    public static void DrawGizmoSquare (Vector2 center, float size) 
-    {
-        DrawGizmoRect(center, new Vector2(size, size)); 
-    }
-
-    public static void DrawGizmoRect (Vector2 center, Vector2 size) 
-    {
-        Vector2 halfSize = size / 2; 
-
-        Vector2 a = center + new Vector2(- halfSize.x, - halfSize.y); 
-        Vector2 b = center + new Vector2(- halfSize.x,   halfSize.y); 
-        Vector2 c = center + new Vector2(  halfSize.x,   halfSize.y); 
-        Vector2 d = center + new Vector2(  halfSize.x, - halfSize.y); 
-
-        Gizmos.DrawLine(a, b); 
-        Gizmos.DrawLine(b, c); 
-        Gizmos.DrawLine(c, d); 
-        Gizmos.DrawLine(d, a); 
     }
 
 }

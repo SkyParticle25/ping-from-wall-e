@@ -8,22 +8,17 @@ using UnityEngine;
 
 public class WorldObject : MonoBehaviour
 {
-    // connections 
-    World world; 
 
 
-    // Start is called before the first frame update
-    void Start()
+
+    void Awake ()
     {
-        world = World.instance; 
-
-        world.onWorldResized += OnWorldResized; 
+        InitEvents(); 
     }
 
-    // Update is called once per frame
-    void Update()
+    void OnDestroy () 
     {
-        
+        ClearEvents(); 
     }
 
 
@@ -31,6 +26,16 @@ public class WorldObject : MonoBehaviour
 
 
     //  Events  ----------------------------------------------------- 
+    void InitEvents () 
+    {
+        World.onWorldResized += OnWorldResized; 
+    }
+
+    void ClearEvents () 
+    {
+        World.onWorldResized -= OnWorldResized; 
+    }
+    
     public void OnWorldResized (float widthChange) 
     {
         Vector3 position = transform.position; 

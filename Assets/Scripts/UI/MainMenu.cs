@@ -1,43 +1,28 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.SceneManagement; 
+using UnityEngine.EventSystems; 
 
 
 
 
 
-public class MainMenu : MonoBehaviour
+public class MainMenu : Menu 
 {
-    public GameObject playMenu; 
-
-
-    // Start is called before the first frame update
-    void Start()
-    {
-        
-    }
-
-    // Update is called once per frame
-    void Update()
-    {
-        
-    }
-
-
+    [SerializeField] GameObject playMenu; 
+    [SerializeField] GameObject settingsMenu; 
 
 
 
     //  Events  ----------------------------------------------------- 
     public void Play () 
     {
-        gameObject.SetActive(false); 
-        playMenu.SetActive(true); 
+        ToMenu(playMenu); 
     }
 
     public void Options () 
     {
-
+        ToMenu(settingsMenu); 
     }
 
     public void Quit () 
@@ -48,7 +33,5 @@ public class MainMenu : MonoBehaviour
 
         Application.Quit(); 
     }
-
-
 
 }

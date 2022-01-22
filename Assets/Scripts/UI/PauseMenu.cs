@@ -10,58 +10,28 @@ using UnityEngine.UI;
 
 
 
-public class PauseMenu : MonoBehaviour
+public class PauseMenu : Menu 
 {
     // parameters 
-    [SerializeField] GameObject pauseMenuPanel; 
-    [SerializeField] Game game; 
+    [SerializeField] GameObject settingsMenu; 
 
 
 
-    // Start is called before the first frame update
-    void Start()
-    {
-        
-    }
-
-    // Update is called once per frame
-    void Update()
-    {
-        if (Keyboard.current.escapeKey.wasPressedThisFrame) 
-        {
-            IsPaused = !IsPaused; 
-        }
-    }
-
-
-
-
-
-    //  State  ------------------------------------------------------ 
-    bool IsPaused 
-    {
-        get { return pauseMenuPanel.activeSelf; } 
-        set {
-            game.IsPaused = value; 
-            pauseMenuPanel.SetActive(value); 
-
-            // when closing the menu deselect last pressed button 
-            // so that it's not selected when the menu is active again 
-            if (!value) 
-            {
-                EventSystem.current.SetSelectedGameObject(null); 
-            }
-        }
-    }
-
-
-
-
-
-    //  Events  ----------------------------------------------------- 
+    //  Button events  ---------------------------------------------- 
     public void Continue () 
     {
-        IsPaused = false; 
+        Game.Continue(); 
+    }
+
+    public void Restart () 
+    {
+        Game.Continue(); 
+        Game.RestartGame(); 
+    }
+
+    public void Options () 
+    {
+        ToMenu(settingsMenu); 
     }
 
     public void MainMenu () 

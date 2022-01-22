@@ -9,16 +9,12 @@ using UnityEngine.InputSystem;
 
 public class Square : MonoBehaviour
 {
-
     // parameters 
     [SerializeField] Platform leftPlatform; 
     [SerializeField] Platform rightPlatform; 
     [SerializeField] float startOffset = 2; 
     [SerializeField] float speed = 10; 
-    [Range(0, 40)] [SerializeField] float angleSpread = 25; 
-    // connections 
-    Game game; 
-    World world; 
+    [Range(0, 175)] [SerializeField] float angleSpread = 160; 
     // geometry 
     float width; 
     float height; 
@@ -29,25 +25,31 @@ public class Square : MonoBehaviour
 
 
 
+    void Awake () 
+    {
+        InitEvents(); 
+    }
+
     // Start is called before the first frame update
     void Start()
     {
-        world = World.instance; 
-        game = Game.instance; 
-
-        game.onReset += Reset; 
-
+        InitMotion(); 
         InitGeometry(); 
     }
 
     // Update is called once per frame
     void Update()
     {
-        if (!Game.instance.IsPaused) 
+        if (!Game.IsPaused) 
         {
             Move(); 
             DoCollisions(); 
         }
+    }
+
+    void OnDestroy () 
+    {
+        ClearEvents(); 
     }
 
 
@@ -77,18 +79,41 @@ public class Square : MonoBehaviour
 
     //  Events  ----------------------------------------------------- 
     public delegate void GoalEventHandler (Side side); 
-    public event GoalEventHandler onGoal; 
+    public event GoalEventHandler onGoal = delegate {}; 
+
+    void InitEvents () 
+    {
+        GameSettings.onChanged += OnSettingsChanged; 
+        Game.onRoundReset += Reset; 
+    }
+
+    void ClearEvents () 
+    {
+        GameSettings.onChanged -= OnSettingsChanged; 
+        Game.onRoundReset -= Reset; 
+    }
+
+    public void OnSettingsChanged () 
+    {
+        speed = GameSettings.squareSpeed; 
+    }
+
+    public void Reset () 
+    {
+        ResetPosition(); 
+        ResetVelocity(); 
+
+        StopAllCoroutines(); 
+    }
 
 
 
 
 
-    //  State  ------------------------------------------------------ 
+    //  Launching  -------------------------------------------------- 
     void Launch () 
     {
-        float angle = 
-              45 + 90 * Random.Range(0, 4)                  // choose 1 out of 4 directions  
-            + angleSpread * Random.Range(-0.5f, 0.5f);      // add random offset 
+        float angle = angleSpread * Random.Range(-0.5f, 0.5f); 
 
         Vector2 direction = new Vector2(
             Mathf.Cos(angle * Mathf.Deg2Rad), 
@@ -106,14 +131,6 @@ public class Square : MonoBehaviour
     {
         yield return new WaitForSeconds(seconds); 
         Launch(); 
-    }
-
-    public void Reset () 
-    {
-        ResetPosition(); 
-        ResetVelocity(); 
-
-        StopAllCoroutines(); 
     }
 
 
@@ -150,7 +167,7 @@ public class Square : MonoBehaviour
 
     void ResetPosition () 
     {
-        Position = game.NextLaunchSide == Side.Left ? 
+        Position = Game.NextLaunchSide == Side.Left ? 
             new Vector2(- startOffset, 0) : 
             new Vector2(  startOffset, 0); 
     }
@@ -162,6 +179,11 @@ public class Square : MonoBehaviour
     //  Motion  ----------------------------------------------------- 
     public Vector2 Velocity => velocity; 
     public float Distance => distance; 
+
+    void InitMotion () 
+    {
+        speed = GameSettings.squareSpeed; 
+    }
 
     void Move () 
     {
@@ -227,12 +249,12 @@ public class Square : MonoBehaviour
         if (velocity.x < 0) 
         {
             side = Side.Left; 
-            return xMin <= world.Rect.xMin; 
+            return xMin <= World.Rect.xMin; 
         }
         if (velocity.x > 0) 
         {
             side = Side.Right; 
-            return xMax >= world.Rect.xMax; 
+            return xMax >= World.Rect.xMax; 
         }
 
         side = Side.Right; 
@@ -241,8 +263,8 @@ public class Square : MonoBehaviour
 
     bool CheckVerticalBounds () 
     {
-        return velocity.y < 0 && yMin <= world.Rect.yMin 
-            || velocity.y > 0 && yMax >= world.Rect.yMax; 
+        return velocity.y < 0 && yMin <= World.Rect.yMin 
+            || velocity.y > 0 && yMax >= World.Rect.yMax; 
     }
 
     Platform CheckPlatforms () 
@@ -252,6 +274,7 @@ public class Square : MonoBehaviour
         //  - square bottom line passes platform front line 
         // 
         //  Other cases are omitted by design: 
+        //  - square is larger than platform 
         //  - square x platform side 
         //  - square x platfrom back 
 

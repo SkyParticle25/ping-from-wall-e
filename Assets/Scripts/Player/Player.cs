@@ -19,21 +19,50 @@ public class Player : MonoBehaviour
 
 
 
+    void Awake () 
+    {
+        platform = GetComponent<Platform>(); 
+        InitEvents(); 
+    }
+
     public void Init (PlayerNumber playerNumber) 
     {
         this.playerNumber = playerNumber; 
     }
 
-    // Start is called before the first frame update
     void Start()
     {
-        platform = GetComponent<Platform>(); 
+        InitMotion(); 
     }
 
-    // Update is called once per frame
     void Update()
     {
         UpdateMotion(); 
+    }
+
+    void OnDestroy () 
+    {
+        ClearEvents(); 
+    }
+
+
+
+
+
+    //  Events  ----------------------------------------------------- 
+    void InitEvents () 
+    {
+        GameSettings.onChanged += OnSettingsChanged; 
+    }
+
+    void ClearEvents () 
+    {
+        GameSettings.onChanged -= OnSettingsChanged; 
+    }
+
+    public void OnSettingsChanged () 
+    {
+        speed = GameSettings.platformSpeed; 
     }
 
 
@@ -41,6 +70,11 @@ public class Player : MonoBehaviour
 
 
     //  Motion  ----------------------------------------------------- 
+    void InitMotion () 
+    {
+        speed = GameSettings.platformSpeed; 
+    }
+
     void UpdateMotion () 
     {
         float input = GetInput(); 

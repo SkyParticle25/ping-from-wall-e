@@ -12,32 +12,52 @@ public class Platform : MonoBehaviour
     [SerializeField] Side side = Side.Left; 
     [Range(0, 0.1f)] [SerializeField] float distanceToEdge = 0.05f; 
 
-    // connections 
-    protected World world; 
     // velocity 
     float velocity; 
 
 
+
+    void Awake () 
+    {
+        InitEvents(); 
+    }
 
     public void Init (Side side) 
     {
         this.side = side; 
     }
 
-    // Start is called before the first frame update
     protected void Start()
     {
-        world = World.instance; 
-
-        Game.instance.onReset += Reset; 
-
-        PositionMeOnScreen(); 
+        InitGeometry(); 
+        InitPosition(); 
     }
 
-    // Update is called once per frame
-    protected void Update()
+    void OnDestroy () 
     {
-        
+        ClearEvents(); 
+    }
+
+
+
+
+
+    //  Events  ----------------------------------------------------- 
+    void InitEvents () 
+    {
+        GameSettings.onChanged += OnSettingsChanged; 
+        Game.onGameReset += Reset; 
+    }
+
+    void ClearEvents () 
+    {
+        GameSettings.onChanged -= OnSettingsChanged; 
+        Game.onGameReset -= Reset; 
+    }
+
+    public void OnSettingsChanged () 
+    {
+        SetSizeFromSettigs(); 
     }
 
 
@@ -63,14 +83,33 @@ public class Platform : MonoBehaviour
         }
     }
 
+    void InitGeometry () 
+    {
+        SetSizeFromSettigs(); 
+    }
+
+    void SetSizeFromSettigs () 
+    {
+        transform.localScale = new Vector3(
+            transform.localScale.x, 
+            GameSettings.platformSize, 
+            transform.localScale.z 
+        ); 
+    }
+
 
 
 
 
     //  Position  --------------------------------------------------- 
-    float MinAllowedY => world.Rect.yMin + Rect.height / 2; 
-    float MaxAllowedY => world.Rect.yMax - Rect.height / 2; 
+    float MinAllowedY => World.Rect.yMin + Rect.height / 2; 
+    float MaxAllowedY => World.Rect.yMax - Rect.height / 2; 
     
+    void InitPosition () 
+    {
+        PositionMeOnScreen(); 
+    }
+
     void PositionMeOnScreen () 
     {
         float normalizedX = (side == Side.Left) ? 
@@ -78,7 +117,7 @@ public class Platform : MonoBehaviour
             (1 - distanceToEdge); 
 
         transform.position = new Vector3(
-            world.Rect.xMin + world.Rect.width * normalizedX, 
+            World.Rect.xMin + World.Rect.width * normalizedX, 
             transform.position.y, 
             transform.position.z 
         ); 

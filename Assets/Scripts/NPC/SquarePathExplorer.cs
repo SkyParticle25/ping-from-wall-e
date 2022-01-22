@@ -21,11 +21,11 @@ public class SquarePathExplorer
         this.worldRect = worldRect; 
     }
 
-    public SquarePathExplorer (Square square, World world) 
+    public SquarePathExplorer (Square square) 
     {
         path = new Ray2D(square.Position, square.Velocity); 
         squareSize = new Vector2(square.Width, square.Height); 
-        worldRect = world.Rect; 
+        worldRect = World.Rect; 
     }
 
 

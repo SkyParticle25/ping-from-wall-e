@@ -2,55 +2,43 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement; 
+using UnityEngine.EventSystems; 
 
 
 
 
-public class PlayMenu : MonoBehaviour
+public class PlayMenu : Menu 
 {
-    public GameObject mainMenu; 
-
-
-    // Start is called before the first frame update
-    void Start()
-    {
-        
-    }
-
-    // Update is called once per frame
-    void Update()
-    {
-        
-    }
-
-
+    // parameters 
+    [SerializeField] GameObject mainMenu; 
 
 
 
     //  Events  ----------------------------------------------------- 
     public void PlayerPlayer () 
     {
-        Game.SetStartParameters(PlayerType.Player, PlayerType.Player); 
+        Game.leftPlayerType = PlayerType.Player; 
+        Game.rightPlayerType = PlayerType.Player; 
         SceneManager.LoadSceneAsync("Game"); 
     }
 
     public void PlayerAI () 
     {
-        Game.SetStartParameters(PlayerType.Player, PlayerType.NPC); 
+        Game.leftPlayerType = PlayerType.Player; 
+        Game.rightPlayerType = PlayerType.NPC; 
         SceneManager.LoadSceneAsync("Game"); 
     }
 
     public void AIAI () 
     {
-        Game.SetStartParameters(PlayerType.NPC, PlayerType.NPC); 
+        Game.leftPlayerType = PlayerType.NPC; 
+        Game.rightPlayerType = PlayerType.NPC; 
         SceneManager.LoadSceneAsync("Game"); 
     }
 
     public void Back () 
     {
-        gameObject.SetActive(false); 
-        mainMenu.SetActive(true); 
+        ToMenu(mainMenu); 
     }
-
 
 }

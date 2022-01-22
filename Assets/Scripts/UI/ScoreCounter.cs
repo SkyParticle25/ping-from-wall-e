@@ -20,16 +20,47 @@ public class ScoreCounter : MonoBehaviour
 
 
 
-    // Start is called before the first frame update
-    void Start()
+    void Awake () 
     {
-        text = GetComponentInChildren<Text>(); 
+        InitEvents(); 
+        InitDisplay(); 
     }
 
-    // Update is called once per frame
-    void Update()
+    void OnDestroy () 
     {
-        
+        ClearEvents(); 
+    }
+
+
+
+
+
+    //  Events  ----------------------------------------------------- 
+    void InitEvents () 
+    {
+        Game.onGoal += OnGoal; 
+        Game.onGameReset += OnReset; 
+    }
+
+    void ClearEvents () 
+    {
+        Game.onGoal -= OnGoal; 
+        Game.onGameReset -= OnReset; 
+    }
+
+    public void OnGoal (Side squareLeftTo) 
+    {
+        if (
+            squareLeftTo == Side.Left && side == Side.Right || 
+            squareLeftTo == Side.Right && side == Side.Left 
+        ) {
+            Increment(); 
+        }
+    }
+
+    public void OnReset () 
+    {
+        ResetCounter(); 
     }
 
 
@@ -39,13 +70,13 @@ public class ScoreCounter : MonoBehaviour
     //  Counter  ---------------------------------------------------- 
     public int Score => score; 
 
-    public void Increment () 
+    void Increment () 
     {
         score++; 
         UpdateDisplay(); 
     }
 
-    public void Reset () 
+    void ResetCounter () 
     {
         score = 0; 
         UpdateDisplay(); 
@@ -56,6 +87,11 @@ public class ScoreCounter : MonoBehaviour
 
 
     //  Display  ---------------------------------------------------- 
+    void InitDisplay () 
+    {
+        text = GetComponentInChildren<Text>(); 
+    }
+
     void UpdateDisplay () 
     {
         text.text = ScoreToString(); 
@@ -71,7 +107,7 @@ public class ScoreCounter : MonoBehaviour
         {
             s = n % 10 + s; 
 
-            // because it doesn't increase the counter after the last iteration 
+            // it's here because it doesn't increase the counter after the last iteration 
             // so it looks like it hasn't reached DIGITS_COUNT yet 
             i++; 
 
